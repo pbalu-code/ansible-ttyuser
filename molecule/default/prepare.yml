@@ -1,0 +1,94 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: true
+  tasks:
+  - name: update sshd conf
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '^PasswordAuthentication.*$'
+      line: 'PasswordAuthentication yes'
+    register: sshconfchanged
+
+  - name: restart sshd
+    service:
+      name: sshd
+      state: reloaded
+    when: sshconfchanged.changed
+
+  #- name: Update altenative python
+  #  alternatives:
+  #    name: python
+  #    path: "{{ python_bin }}"
+
+  - name: Prepare in RHEL/Centos way
+    block:
+      - name: Install firewalld
+        yum:
+          name: firewalld
+          state: present
+
+      - name: Enable firewalld service
+        systemd:
+          name: firewalld
+          state: started
+          enabled: yes
+
+      - name: Firewalld Open SSH
+        firewalld:
+          service: ssh
+          permanent: yes
+          immediate: yes
+          state: enabled
+
+      - name: Firewalld Disable Cockpit
+        firewalld:
+          service: cockpit
+          permanent: yes
+          immediate: yes
+          state: disabled
+
+      - name: Firewalld enable ICMP echo-reply
+        firewalld:
+          icmp_block: echo-reply
+          permanent: yes
+          immediate: yes
+          state: enabled
+
+      - name: Firewalld enable ICMP echo-request
+        firewalld:
+          icmp_block: echo-request
+          permanent: yes
+          immediate: yes
+          state: enabled
+
+      - name: Firewalld enable icmp_block_inversion
+        firewalld:
+          icmp_block_inversion: 'yes'
+          permanent: yes
+          immediate: yes
+          state: enabled
+    when: ansible_os_family == "Redhat"
+
+  - name: Prepare in Debian way
+    block:
+      - name: Install UFW
+        package:
+          name: ufw
+          state: present
+
+      - name: Enable ufw service
+        systemd:
+          name: ufw
+          state: started
+          enabled: yes
+
+      - name: Firewalld Open SSH
+        community.general.ufw:
+          rule: allow
+          name: OpenSSH
+
+      - name: Set logging
+        community.general.ufw:
+          logging: 'on'
+    when: ansible_os_family == "Debian"

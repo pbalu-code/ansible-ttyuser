@@ -1,0 +1,23 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+  vars:
+    TTYUSER_users:
+      - name: captain
+        state: present
+        shell: /bin/bash
+        pubkeys: "ssh-rsa xxxxxxxxxxxxxxxB capt@host
+          ssh-ed25519 xcvbn12345 capt@host2"
+      - name: bela
+        state: present
+        shell: /bin/bash
+        pubkeys: "ssh-rsa xxxxxxxxxxxxxxxB capt@host
+          ssh-ed25519 xcvbn12345 capt@host2"
+    TTYUSER_sudoers:
+      - captain
+    TTYUSER_rewoke_sudoers: []
+  tasks:
+    - name: "Include ttyuser"
+      include_role:
+        name: "ttyuser"

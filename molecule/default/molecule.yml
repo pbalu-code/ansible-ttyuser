@@ -1,0 +1,67 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+
+lint: |
+  yamllint .
+  ansible-lint -v .
+
+vagrant:
+  raw_config_args:
+    #- "ssh.insert_key = false"
+    - "vm.network 'forwarded_port', guest: 80, host: 8080"
+
+platforms:
+  - name: TTYUser-Centos7
+    box: "bento/centos-7.9"
+    memory: 4096
+    ansible_groups:
+      - group_1
+    interfaces:
+      - network_name: private_network
+        type: dhcp
+        auto_config: true
+    #instance_raw_config_args:
+      #- "vm.provision: shell, inline: 'which python || sudo yum -y install python3'"
+  - name: TTYUser-Centos8
+    box: "bento/centos-8.3"
+    interfaces:
+      - network_name: private_network
+        type: static
+        ip: "192.168.233.145"
+    options:
+      append_platform_to_hostname: no
+    raw_config_args:
+      - "vm.network 'private_network', type: 'dhcp', auto_config: false"
+  - name: TTYUser-Ubuntu18
+    box: ubuntu/bionic64
+    interfaces:
+      - network_name: private_network
+        auto_config: true
+        ip: "192.168.233.146"
+  - name: TTYUser-Ubuntu20
+    box: "generic/ubuntu2004"
+    interfaces:
+      - network_name: private_network
+        auto_config: true
+        ip: "192.168.233.147"
+  - name: TTYUser-Debian
+    box: "generic/debian9"
+    interfaces:
+      - network_name: private_network
+        auto_config: true
+        ip: "192.168.233.148"
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+verifier:
+  #name: ansible
+  name: testinfra
+  lint:
+    name: flake8
+  options:
+    sudo: true
+    v: 1
