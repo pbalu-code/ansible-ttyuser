@@ -65,3 +65,9 @@ verifier:
   options:
     sudo: true
     v: 1
+  directory: ../tests
+
+#additional_files_or_dirs:
+  #    - ../path/to/test_1.py
+  #    - ../path/to/test_2.py
+  #    - ../path/to/directory/*
