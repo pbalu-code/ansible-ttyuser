@@ -1,0 +1,9 @@
+[submodule "molecule/tests/libs/bats"]
+	path = molecule/tests/libs/bats
+	url = https://github.com/sstephenson/bats
+[submodule "molecule/tests/libs/bats-assert"]
+	path = molecule/tests/libs/bats-assert
+	url = https://github.com/ztombol/bats-assert
+[submodule "molecule/tests/libs/bats-support"]
+	path = molecule/tests/libs/bats-support
+	url = https://github.com/ztombol/bats-support
