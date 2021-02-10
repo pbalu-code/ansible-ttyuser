@@ -92,3 +92,12 @@
         community.general.ufw:
           logging: 'on'
     when: ansible_os_family == "Debian"
+
+  - name: Remove nologin
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /run/nologin
+      - /etc/nologin
+      - /var/run/nologin

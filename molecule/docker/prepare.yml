@@ -30,3 +30,12 @@
       path: /etc/ssh/sshd_config
       regexp: '^PasswordAuthentication.*$'
       line: 'PasswordAuthentication yes'
+
+  - name: Remove nologin
+    file:
+      path: "{{ item }}"
+      state: absent
+    with_items:
+      - /run/nologin
+      - /etc/nologin
+      - /var/run/nologin
