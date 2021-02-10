@@ -1,10 +1,11 @@
 ---
 # tasks file for ttyuser
 
-- name: Manage users if it is not presents
+- name: Manage users if them are not presents
   user:
     name: '{{ item.name }}'
     password: '{{ item.password | default(omit) }}'
+    update_password: on_create
     shell: '{{ item.shell | default(omit) }}'
     state: '{{ item.state | default(present) }}'
     append: "{{ item.groups is defined | ternary('yes', omit) }}"

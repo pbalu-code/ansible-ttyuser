@@ -54,14 +54,17 @@ provisioner:
   lint:
     name: ansible-lint
 verifier:
-  #name: ansible
-  name: testinfra
-  lint:
-    name: flake8
-  options:
-    sudo: true
-    v: 1
-  directory: ../tests
+  name: ansible
+  lint: |
+    yamllint .
+    ansible-lint -v .
+  #name: testinfra
+  #lint:
+  #  name: flake8
+  #options:
+  #  sudo: true
+  #  v: 1
+  #directory: ../tests
 
 #additional_files_or_dirs:
   #    - ../path/to/test_1.py
