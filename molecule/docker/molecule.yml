@@ -5,7 +5,7 @@ driver:
   name: docker
 
 lint: |
-  yamllint .
+  yamllint -c molecule/tests/yamllint.yml .
   ansible-lint -v .
 
 platforms:
@@ -84,7 +84,7 @@ provisioner:
 verifier:
   name: ansible
   lint: |
-    yamllint .
+    yamllint -c molecule/tests/yamllint.yml .
     ansible-lint -v .
   #name: testinfra
   #lint:

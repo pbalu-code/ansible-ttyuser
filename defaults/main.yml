@@ -4,10 +4,10 @@ TTYUSER_users:
   - name: captain
     state: present
     shell: /bin/bash
-    #remove_homedir: yes
-    #password: password123
-    #group: captain
-    #groups:
+    # remove_homedir: yes
+    # password: password123
+    # group: captain
+    # groups:
     #  - sudo
     #  - admin
     pubkeys: "ssh-rsa xxxxxxxxxxxxxxxB capt@host

@@ -5,7 +5,7 @@ driver:
   name: vagrant
 
 lint: |
-  yamllint .
+  yamllint -c molecule/tests/yamllint.yml .
   ansible-lint -v .
 
 vagrant:
@@ -32,7 +32,7 @@ platforms:
         type: static
         ip: "192.168.233.145"
     options:
-      append_platform_to_hostname: no
+      append_platform_to_hostname: false
     raw_config_args:
       - "vm.network 'private_network', type: 'dhcp', auto_config: false"
   - name: TTYUser-Ubuntu18

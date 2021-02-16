@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  gather_facts: yes
+  gather_facts: true
   become: true
   tasks:
   - name: update sshd conf
@@ -32,41 +32,41 @@
         systemd:
           name: firewalld
           state: started
-          enabled: yes
+          enabled: true
 
       - name: Firewalld Open SSH
         firewalld:
           service: ssh
-          permanent: yes
-          immediate: yes
+          permanent: true
+          immediate: true
           state: enabled
 
       - name: Firewalld Disable Cockpit
         firewalld:
           service: cockpit
-          permanent: yes
-          immediate: yes
+          permanent: true
+          immediate: true
           state: disabled
 
       - name: Firewalld enable ICMP echo-reply
         firewalld:
           icmp_block: echo-reply
-          permanent: yes
-          immediate: yes
+          permanent: true
+          immediate: true
           state: enabled
 
       - name: Firewalld enable ICMP echo-request
         firewalld:
           icmp_block: echo-request
-          permanent: yes
-          immediate: yes
+          permanent: true
+          immediate: true
           state: enabled
 
       - name: Firewalld enable icmp_block_inversion
         firewalld:
-          icmp_block_inversion: 'yes'
-          permanent: yes
-          immediate: yes
+          icmp_block_inversion: 'true'
+          permanent: true
+          immediate: true
           state: enabled
     when: ansible_os_family == "Redhat"
 
@@ -81,7 +81,7 @@
         systemd:
           name: ufw
           state: started
-          enabled: yes
+          enabled: true
 
       - name: Firewalld Open SSH
         community.general.ufw:

@@ -1,6 +1,5 @@
 ---
 # This is an example playbook to execute Ansible tests.
-
 - name: Verify
   hosts: all
   become: true
@@ -14,14 +13,14 @@
       delegate_to: localhost
       changed_when: false
 
-
     # Continue with ansible tests
     - name: Get service facts
       service_facts:
 
     - name: Set ssh service name
       set_fact:
-        ssh_service: "{{ (ansible_os_family == 'RedHat') | ternary('sshd.service', 'ssh.service') }}"
+        ssh_service: "{{ (ansible_os_family == 'RedHat') | ternary\
+          ('sshd.service', 'ssh.service') }}"
 
     - name: Verify with ansible asserts
       assert:
@@ -46,4 +45,3 @@
           - newusers.stdout == "2"
         fail_msg: "Not all users have been created"
         success_msg: "All users have been created and able to login with SSH"
-
