@@ -1,0 +1,8 @@
+# redmine/molecule/tests/lint.yml
+---
+skip_list: []
+
+warn_list:
+  - '403'
+
+exclude_paths: []

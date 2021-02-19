@@ -6,7 +6,7 @@ driver:
 
 lint: |
   yamllint -c molecule/tests/yamllint.yml .
-  ansible-lint -v .
+  ansible-lint -v -c molecule/tests/lint.yml .
 
 platforms:
   - name: TTYUser-Centos7-systemd
@@ -85,7 +85,7 @@ verifier:
   name: ansible
   lint: |
     yamllint -c molecule/tests/yamllint.yml .
-    ansible-lint -v .
+    ansible-lint -v -c molecule/tests/lint.yml .
   #name: testinfra
   #lint:
   #  name: flake8
@@ -116,6 +116,7 @@ scenario:
     - destroy
   converge_sequence:
     # - dependency # not configured yet.
+    - lint
     - create
     - prepare
     - converge
