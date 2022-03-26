@@ -16,4 +16,4 @@ TTYUSER_users:
 TTYUSER_sudoers:
   - captain
 
-TTYUSER_rewoke_sudoers: []
+TTYUSER_revoke_sudoers: []

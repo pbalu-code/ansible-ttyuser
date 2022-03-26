@@ -1,5 +1,25 @@
 ---
 # tasks file for ttyuser
+- name: Check getenforce path
+  shell:
+    cmd: which getenforce
+  changed_when: false
+  failed_when: false
+  register: pthgetenforce
+
+- name: Query Selinux state
+  shell:
+    cmd: "{{ pthgetenforce.stdout }}"
+  register: getenforce
+  changed_when: false
+  when: pthgetenforce.rc == 0
+
+- name: Install Selinux Python components
+  package:
+    name: libselinux-python
+  when:
+    - pthgetenforce.rc == 0
+    - getenforce.stdout == 'Enforcing'
 
 - name: Manage users if them are not presents
   user:
@@ -16,7 +36,6 @@
   loop: '{{ TTYUSER_users }}'
   loop_control:
     label: "{{ item.name }}"
-
 
 - name: Manage SSH authorized_keys
   ansible.posix.authorized_key:
@@ -38,7 +57,7 @@
     path: /etc/sudoers
     state: absent
     regexp: '^{{ item }}\s+.*ALL$'
-  with_items: '{{ TTYUSER_rewoke_sudoers }}'
+  with_items: '{{ TTYUSER_revoke_sudoers }}'
 
 - name: Check access.conf is present
   stat:
