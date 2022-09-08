@@ -48,7 +48,7 @@
 - name: Set sudoers
   lineinfile:
     path: /etc/sudoers
-    line: '{{ item}} ALL=(ALL) NOPASSWD:ALL'
+    line: '{{ item }} ALL=(ALL) NOPASSWD:ALL'
     regexp: "^{{ item }}\\s*.*"
   with_items: '{{ TTYUSER_sudoers }}'
 
