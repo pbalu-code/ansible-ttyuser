@@ -6,7 +6,7 @@ driver:
 
 lint: |
   yamllint -c molecule/tests/yamllint.yml .
-  ansible-lint -v .
+  ansible-lint -v -c molecule/tests/lint.yml .
 
 vagrant:
   raw_config_args:
@@ -21,12 +21,12 @@ platforms:
       - group_1
     interfaces:
       - network_name: private_network
-        type: dhcp
-        auto_config: true
+        type: static
+        ip: "192.168.233.144"
     #instance_raw_config_args:
       #- "vm.provision: shell, inline: 'which python || sudo yum -y install python3'"
   - name: TTYUser-Centos8
-    box: "bento/centos-8.3"
+    box: "bento/centos-8"
     interfaces:
       - network_name: private_network
         type: static

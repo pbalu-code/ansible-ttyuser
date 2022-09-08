@@ -1,6 +1,6 @@
 ---
 galaxy_info:
-  author: Balázs Petik
+  author: balazspetik
   description: Ansible role to create users
   company: ""
 

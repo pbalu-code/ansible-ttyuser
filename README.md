@@ -13,6 +13,11 @@ Docker:
 - Ubuntu
 - Centos
 
+Ansible:
+- 2.9
+- 2.10
+- 3.0
+
 
 Variables:
 

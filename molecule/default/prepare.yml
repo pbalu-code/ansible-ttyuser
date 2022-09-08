@@ -35,35 +35,35 @@
           enabled: true
 
       - name: Firewalld Open SSH
-        firewalld:
+        ansible.posix.firewalld:
           service: ssh
           permanent: true
           immediate: true
           state: enabled
 
       - name: Firewalld Disable Cockpit
-        firewalld:
+        ansible.posix.firewalld:
           service: cockpit
           permanent: true
           immediate: true
           state: disabled
 
       - name: Firewalld enable ICMP echo-reply
-        firewalld:
+        ansible.posix.firewalld:
           icmp_block: echo-reply
           permanent: true
           immediate: true
           state: enabled
 
       - name: Firewalld enable ICMP echo-request
-        firewalld:
+        ansible.posix.firewalld:
           icmp_block: echo-request
           permanent: true
           immediate: true
           state: enabled
 
       - name: Firewalld enable icmp_block_inversion
-        firewalld:
+        ansible.posix.firewalld:
           icmp_block_inversion: 'true'
           permanent: true
           immediate: true

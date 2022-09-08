@@ -1,8 +1,13 @@
 # redmine/molecule/tests/lint.yml
 ---
-skip_list: []
-
+skip_list:
+  - 'command-instead-of-shell'
 warn_list:
-  - '403'
+  - 'package-latest'
 
-exclude_paths: []
+exclude_paths:
+  - molecule/tests/libs/
+  - bin/
+  - .idea/
+  - lib/
+  - lib64/
