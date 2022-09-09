@@ -1,6 +1,7 @@
 ---
 galaxy_info:
   author: balazspetik
+  role_name: ttyuser
   description: Ansible role to create users
   company: ""
 
