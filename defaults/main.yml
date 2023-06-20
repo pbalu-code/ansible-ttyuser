@@ -17,3 +17,5 @@ TTYUSER_sudoers:
   - captain
 
 TTYUSER_revoke_sudoers: []
+TTYUSER_sshkey_type: ecdsa
+TTYUSER_sshkey_size: 521

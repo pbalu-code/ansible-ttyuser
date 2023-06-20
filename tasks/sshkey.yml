@@ -1,0 +1,37 @@
+---
+- name: Check SSH key status
+  ansible.builtin.stat:
+    path: "/home/{{ item.name }}/.ssh/id_ssh"
+  register: sshkeyfilestat
+
+- name: create SSH key if not exist
+  community.crypto.openssh_keypair:
+    type: "{{ TTYUSER_sshkey_type }}"
+    path: "/home/{{ item.name }}/.ssh/id_ssh"
+    mode: '0600'
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    size: "{{ TTYUSER_sshkey_size }}"
+ #   passphrase: "{{ item.keypass | default(omit) }}"
+ #   backend: cryptography
+  register: sshkeyfile
+  when: not sshkeyfilestat.stat.exists
+
+- name: Set ssh key pass - Newer Ansible - openssh_keypair modul has passphrase parameter.
+  shell:
+    cmd: "ssh-keygen -f id_ssh -p -N {{ item.keypass }}"
+    chdir: "/home/{{ item.name }}/.ssh/"
+  when: sshkeyfile.changed and item.keypass is defined
+
+- name: Slurp SSH pubkey
+  ansible.builtin.slurp:
+    src: /home/{{ item.name }}/.ssh/id_ssh.pub
+  register: pubkey
+
+- name: Manage SSH authorized_keys
+  ansible.posix.authorized_key:
+    user: '{{ item.name }}'
+    key: "{{ pubkey['content'] | b64decode }}"
+    exclusive: '{{ item.exclusive_pubkey | default(false) }}'
+  when: 
+    - sshkeyfile.changed

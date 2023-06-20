@@ -1,38 +1,39 @@
 ---
 # tasks file for ttyuser
 - name: Check getenforce path
-  shell:
+  ansible.builtin.shell:
     cmd: which getenforce
   changed_when: false
   failed_when: false
   register: pthgetenforce
 
 - name: Query Selinux state
-  shell:
+  ansible.builtin.shell:
     cmd: "{{ pthgetenforce.stdout }}"
   register: getenforce
   changed_when: false
   when: pthgetenforce.rc == 0
 
 - name: Install Selinux Python components
-  package:
+  ansible.builtin.package:
     name: libselinux-python
   when:
     - pthgetenforce.rc == 0
     - getenforce.stdout == 'Enforcing'
 
-- name: Manage users if them are not presents
-  user:
+- name: Manage users
+  ansible.builtin.user:
     name: '{{ item.name }}'
     password: '{{ item.password | default(omit) }}'
     update_password: on_create
     shell: '{{ item.shell | default(omit) }}'
-    state: '{{ item.state | default(present) }}'
+    state: '{{ item.state | default("present") }}'
     append: "{{ item.groups is defined | ternary('yes', omit) }}"
     group: '{{ item.group | default(omit) }}'
     groups: '{{ item.groups | default(omit) }}'
     remove: "{{ item.remove_homedir | default('no') }}"
-    #local: yes
+    force: yes
+    # local: yes
   loop: '{{ TTYUSER_users }}'
   loop_control:
     label: "{{ item.name }}"
@@ -41,35 +42,64 @@
   ansible.posix.authorized_key:
     user: '{{ item.name }}'
     key: '{{ item.pubkeys }}'
+    exclusive: '{{ item.exclusive_pubkey | default(false) }}'
   loop: '{{ TTYUSER_users }}'
   loop_control:
     label: "{{ item.name }}"
+  when: 
+    - item.pubkeys is defined and ( item.pubkeys | length > 10 )
+    - item.state != 'absent'
+
+- name: Ensure .ssh directory is present
+  ansible.builtin.file:
+    path: "/home/{{ item.name }}/.ssh"
+    state: directory
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    mode: '0700'
+  loop: '{{ TTYUSER_users }}'
+  loop_control:
+    label: "{{ item.name }}"
+  when: item.state != 'absent'
+
+- name: Include SSH key gen
+  ansible.builtin.include_tasks:
+    file: sshkey.yml
+  loop: '{{ TTYUSER_users }}'
+  loop_control:
+    label: "{{ item.name }}"
+  when: 
+    - not ( item.pubkeys is defined and ( item.pubkeys | length > 10 ))
+    - item.state != 'absent'
+
 
 - name: Set sudoers
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     line: '{{ item }} ALL=(ALL) NOPASSWD:ALL'
     regexp: "^{{ item }}\\s*.*"
   with_items: '{{ TTYUSER_sudoers }}'
+  when: TTYUSER_sudoers is defined and ( TTYUSER_sudoers | length>0 )
 
 - name: Remove unwanted sudoers users
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers
     state: absent
     regexp: '^{{ item }}\s+.*ALL$'
   with_items: '{{ TTYUSER_revoke_sudoers }}'
+  when: TTYUSER_revoke_sudoers is defined and ( TTYUSER_revoke_sudoers | length>0 )
 
-- name: Check access.conf is present
-  stat:
-    path: /etc/security/access.conf
-  register: accesscnf
+# - name: Check access.conf is present
+#   stat:
+#     path: /etc/security/access.conf
+#   register: accesscnf
 
-- name: Manage access.conf
-  lineinfile:
-    path: /etc/security/access.conf
-    line: '+ : {{ item.name }} : ALL'
-    insertbefore: '^-\s*:\s*ALL\s*:\s*ALL.*$'
-  loop: '{{ TTYUSER_users }}'
-  loop_control:
-    label: "{{ item.name }}"
-  when: accesscnf.stat.exists
+# - name: Manage access.conf
+#   ansible.builtin.lineinfile:
+#     path: /etc/security/access.conf
+#     line: '+ : {{ item.name }} : ALL'
+#     insertbefore: '^-\s*:\s*ALL\s*:\s*ALL.*$'
+#   loop: '{{ TTYUSER_users }}'
+#   loop_control:
+#     label: "{{ item.name }}"
+#   when: accesscnf.stat.exists
