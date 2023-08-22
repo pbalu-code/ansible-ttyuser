@@ -21,16 +21,44 @@
     - pthgetenforce.rc == 0
     - getenforce.stdout == 'Enforcing'
 
+- name: Add default values where are missing
+  ansible.builtin.set_fact:
+    TTYUSER_users: "{{ item | combine({'state': present}) }}"
+  vars:
+    present: "{{ item.state | default('present') }}"
+  loop: '{{ TTYUSER_users }}'
+  loop_control:
+    label: "{{ item.name }}"
+  register: tmp_TTYUSER_users
+
+- name: Update TTYUSER_users
+  set_fact:
+    TTYUSER_users: "{{ tmp_TTYUSER_users.results | map(attribute='ansible_facts.TTYUSER_users') | list }}" 
+
+- name: Manage groups
+  ansible.builtin.group:
+    gid: '{{ item.gid | default(omit) }}'
+    name: '{{ item.name }}'
+    system: '{{ item.system | default(omit) }}'
+  loop: '{{ TTYUSER_groups }}'
+  loop_control:
+    label: "{{ item.name }}"
+  when: TTYUSER_groups is defined
+
 - name: Manage users
   ansible.builtin.user:
     name: '{{ item.name }}'
     password: '{{ item.password | default(omit) }}'
-    update_password: on_create
+    update_password: "{{ item.update_password | default('on_create') }}"
+    password_lock: '{{ item.password_lock | default(omit) }}'
     shell: '{{ item.shell | default(omit) }}'
     state: '{{ item.state | default("present") }}'
     append: "{{ item.groups is defined | ternary('yes', omit) }}"
-    group: '{{ item.group | default(omit) }}'
+    group: '{{ item.group | default(item.name) }}'
     groups: '{{ item.groups | default(omit) }}'
+    home: '{{ item.home | default(omit) }}'
+    uid: '{{ item.uid | default(omit) }}'
+    comment: '{{ item.comment | default(omit) }}'
     remove: "{{ item.remove_homedir | default('no') }}"
     force: yes
     # local: yes
@@ -48,14 +76,14 @@
     label: "{{ item.name }}"
   when: 
     - item.pubkeys is defined and ( item.pubkeys | length > 10 )
-    - item.state != 'absent'
+    - item.state != 'absent'"
 
 - name: Ensure .ssh directory is present
   ansible.builtin.file:
-    path: "/home/{{ item.name }}/.ssh"
+    path: "{{ item.home | default( '/home/' + item.name ) }}/.ssh"
     state: directory
     owner: "{{ item.name }}"
-    group: "{{ item.name }}"
+    group: "{{ item.group | default( item.name ) }}"
     mode: '0700'
   loop: '{{ TTYUSER_users }}'
   loop_control:
@@ -71,7 +99,7 @@
   when: 
     - not ( item.pubkeys is defined and ( item.pubkeys | length > 10 ))
     - item.state != 'absent'
-
+    - item.skip_keygen is not defined or not item.skip_keygen
 
 - name: Set sudoers
   ansible.builtin.lineinfile:
@@ -89,17 +117,19 @@
   with_items: '{{ TTYUSER_revoke_sudoers }}'
   when: TTYUSER_revoke_sudoers is defined and ( TTYUSER_revoke_sudoers | length>0 )
 
-# - name: Check access.conf is present
-#   stat:
-#     path: /etc/security/access.conf
-#   register: accesscnf
+- name: Check access.conf is present
+  stat:
+    path: /etc/security/access.conf
+  register: accesscnf
 
-# - name: Manage access.conf
-#   ansible.builtin.lineinfile:
-#     path: /etc/security/access.conf
-#     line: '+ : {{ item.name }} : ALL'
-#     insertbefore: '^-\s*:\s*ALL\s*:\s*ALL.*$'
-#   loop: '{{ TTYUSER_users }}'
-#   loop_control:
-#     label: "{{ item.name }}"
-#   when: accesscnf.stat.exists
+- name: Manage access.conf
+  ansible.builtin.lineinfile:
+    path: /etc/security/access.conf
+    line: '+ : {{ item.name }} : ALL'
+    insertbefore: '^-\s*:\s*ALL\s*:\s*ALL.*$'
+  loop: '{{ TTYUSER_users }}'
+  loop_control:
+    label: "{{ item.name }}"
+  when: 
+    - accesscnf.stat.exists
+    - TTYUSER_update_access_conf

@@ -1,7 +1,8 @@
 # ansible users role
 ______________________
 
-Ansible driven mass local user creation and management role.
+Version: 1.3
+Ansible driven mass local user and group creation and management role.
 
 Tested with (Molecule):  
 Vagrant:  
@@ -18,43 +19,71 @@ Ansible:
 - 2.10
 - 3.0
 
+Manually tested on:
+OpenSUSE
+
+
+## Warning - For OpenSUSE the user's primary group must be defined in the `TTYUSER_users ` if it is necessary should be created before by `TTYUSER_groups`
+OpenSUSE is not create primary group automatically, it use the 'users' group as default. - Not recommended
+
 
 Variables:
 
-`users ` List of dictionaries
-`sudoers ` List of users to add sudoers
-`rewoke_sudoers ` List of users to remove from sudoers
+`TTYUSER_groups ` List of groups to create #1
+`TTYUSER_users ` List of dictionaries #2
+`TTYUSER_sudoers ` List of users to add sudoers with nopasswd
+`TTYUSER_revoke_sudoers ` List of users to remove from sudoers
+`TTYUSER_sshkey_size ` Global variable for key size (default 521)
+`TTYUSER_sshkey_type`  Global variable for key type (default: ecdsa )
+
+TTYUSER_sshkey_size
 Example:  
 ###Add user
 ```yaml
-users:  
+TTYUSER_users:  
   - name: captain
     state: present #optional
     shell: /bin/bash #optional 
     password: "{{ 'password123' | password_hash('sha512') }}"  #optional
-    group: captain #optional
+    keypass: xcvbn123 # Password for the SSH key what is to be created
+    group: skipper #optional*
     groups:   #optional with auto append
       - sudo
       - admin
+      - private
     pubkeys: "ssh-rsa xxxxxxxxxxxxxxx capt@host
       ssh-ed25519 xcvbn12345 capt@host2"
-
-sudoers:
+    update_password: "always" #  default: 'on_create'
+    password_lock: 'no' # default: 'no'
+    append: "yes/no" # default: 'yes' if you have more groups to add
+    home: '/home/bluebread' # optional
+    uid: 1003 # optional
+    remove: "{{ item.remove_homedir | default('no') }}"
+    skip_keygen: false  # Disable key generation default: false
+    comment: Demo User  # Optional 
+    # hardcoded: force: yes
+TTYUSER_sudoers:
   - captain
 
-rewoke_sudoers: []
+TTYUSER_groups:
+  - name: skipper
+    gid: 1003
+  - name: private
+    system: false  # Set group as system user optional. Default: false
+
+TTYUSER_revoke_sudoers: []
 
 ```
 ###Remove user:
 ```yaml
-users:  
+TTYUSER_users:  
   - name: captain
     state: absent
     remove_homedir: yes
 
-sudoers: []
+TTYUSER_sudoers:: []
 
-rewoke_sudoers: 
+TTYUSER_revoke_sudoers: 
   - captain
 
 ```
@@ -95,5 +124,10 @@ __side-effect:__  Use the provisioner to perform side-effects to the instances.
 __test:__         Test (dependency, lint, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy).  
 
 
+Release  note:
 
+1.3 - Support full functionality of the ansible user modul
+      Group management (guid, name, system)
+      Slurp SSH keys into inventor_dir/files
+      
 

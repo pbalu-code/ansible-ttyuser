@@ -1,16 +1,16 @@
 ---
 - name: Check SSH key status
   ansible.builtin.stat:
-    path: "/home/{{ item.name }}/.ssh/id_ssh"
+    path: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/id_ssh"
   register: sshkeyfilestat
 
 - name: create SSH key if not exist
   community.crypto.openssh_keypair:
     type: "{{ TTYUSER_sshkey_type }}"
-    path: "/home/{{ item.name }}/.ssh/id_ssh"
+    path: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/id_ssh"
     mode: '0600'
     owner: "{{ item.name }}"
-    group: "{{ item.name }}"
+    group: "{{ item.group | default(item.name) }}"
     size: "{{ TTYUSER_sshkey_size }}"
  #   passphrase: "{{ item.keypass | default(omit) }}"
  #   backend: cryptography
@@ -20,12 +20,12 @@
 - name: Set ssh key pass - Newer Ansible - openssh_keypair modul has passphrase parameter.
   shell:
     cmd: "ssh-keygen -f id_ssh -p -N {{ item.keypass }}"
-    chdir: "/home/{{ item.name }}/.ssh/"
+    chdir: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/"
   when: sshkeyfile.changed and item.keypass is defined
 
 - name: Slurp SSH pubkey
   ansible.builtin.slurp:
-    src: /home/{{ item.name }}/.ssh/id_ssh.pub
+    src: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/id_ssh.pub"
   register: pubkey
 
 - name: Manage SSH authorized_keys
@@ -35,3 +35,40 @@
     exclusive: '{{ item.exclusive_pubkey | default(false) }}'
   when: 
     - sshkeyfile.changed
+
+- name: Check inventory / files 
+  ansible.builtin.stat:
+    path: "{{ inventory_dir }}/files"
+  register: inventoryfilesfolder
+  delegate_to: localhost
+
+- name: Check local keyfile
+  ansible.builtin.stat:
+    path: "{{ inventory_dir }}/files/{{ item.name }}-{{ inventory_hostname_short }}.key"
+  register: localsshkeyfile
+  delegate_to: localhost
+  when: inventoryfilesfolder.stat.exists
+
+- name: Check local keyfile
+  ansible.builtin.stat:
+    path: "{{ inventory_dir }}/files/{{ item.name }}-{{ inventory_hostname_short }}.key"
+  register: localsshkeyfile
+  delegate_to: localhost
+
+- name: Slurp SSH key
+  ansible.builtin.slurp:
+    src: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/id_ssh"
+  register: sshkey
+  when: 
+    - inventoryfilesfolder.stat.exists
+    - not localsshkeyfile.stat.exists
+
+- name: Store the new ssh key in inventory_dir/files
+  ansible.builtin.copy:
+    content: "{{ sshkey.content | b64decode }}"
+    dest: "{{ inventory_dir }}/files/{{ item.name }}-{{ inventory_hostname_short }}.key"
+    mode: '0666'
+  delegate_to: localhost
+  when: 
+    - inventoryfilesfolder.stat.exists
+    - not localsshkeyfile.stat.exists
