@@ -1,7 +1,7 @@
 # ansible users role
 ______________________
 
-Version: 1.3
+Version: 1.3.1
 Ansible driven mass local user and group creation and management role.
 
 Tested with (Molecule):  
@@ -61,6 +61,8 @@ TTYUSER_users:
     remove: "{{ item.remove_homedir | default('no') }}"
     skip_keygen: false  # Disable key generation default: false
     comment: Demo User  # Optional 
+    password_expire_max: 2 # optional - Maximum number of days between password change.
+    password_expire_min: 100 # optional - Minimum number of days between password change.
     # hardcoded: force: yes
 TTYUSER_sudoers:
   - captain
@@ -125,8 +127,10 @@ __test:__         Test (dependency, lint, cleanup, destroy, syntax, create, prep
 
 
 Release  note:
+1.3.1 - Suppress logs when the task manage passwords
+      password_expire min/max support
 
-1.3 - Support full functionality of the ansible user modul
+1.3 - Support the most of functionality of the ansible user modul
       Group management (guid, name, system)
       Slurp SSH keys into inventor_dir/files
       

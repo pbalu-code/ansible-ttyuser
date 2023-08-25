@@ -30,10 +30,12 @@
   loop_control:
     label: "{{ item.name }}"
   register: tmp_TTYUSER_users
+  no_log: true
 
 - name: Update TTYUSER_users
   set_fact:
     TTYUSER_users: "{{ tmp_TTYUSER_users.results | map(attribute='ansible_facts.TTYUSER_users') | list }}" 
+  no_log: true
 
 - name: Manage groups
   ansible.builtin.group:
@@ -60,11 +62,14 @@
     uid: '{{ item.uid | default(omit) }}'
     comment: '{{ item.comment | default(omit) }}'
     remove: "{{ item.remove_homedir | default('no') }}"
+    password_expire_max: "{{ item.password_expire_max | default(omit) }}"
+    password_expire_min: "{{ item.password_expire_min | default(omit) }}"
     force: yes
     # local: yes
   loop: '{{ TTYUSER_users }}'
   loop_control:
     label: "{{ item.name }}"
+  no_log: true
 
 - name: Manage SSH authorized_keys
   ansible.posix.authorized_key:
@@ -77,6 +82,7 @@
   when: 
     - item.pubkeys is defined and ( item.pubkeys | length > 10 )
     - item.state != 'absent'"
+  no_log: true
 
 - name: Ensure .ssh directory is present
   ansible.builtin.file:
@@ -89,6 +95,7 @@
   loop_control:
     label: "{{ item.name }}"
   when: item.state != 'absent'
+  no_log: true
 
 - name: Include SSH key gen
   ansible.builtin.include_tasks:
@@ -100,6 +107,7 @@
     - not ( item.pubkeys is defined and ( item.pubkeys | length > 10 ))
     - item.state != 'absent'
     - item.skip_keygen is not defined or not item.skip_keygen
+  no_log: true
 
 - name: Set sudoers
   ansible.builtin.lineinfile:
@@ -133,3 +141,4 @@
   when: 
     - accesscnf.stat.exists
     - TTYUSER_update_access_conf
+  no_log: true

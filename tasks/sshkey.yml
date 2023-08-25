@@ -22,6 +22,7 @@
     cmd: "ssh-keygen -f id_ssh -p -N {{ item.keypass }}"
     chdir: "{{ item.home | default( '/home/' + item.name ) }}/.ssh/"
   when: sshkeyfile.changed and item.keypass is defined
+  no_log: true
 
 - name: Slurp SSH pubkey
   ansible.builtin.slurp:
