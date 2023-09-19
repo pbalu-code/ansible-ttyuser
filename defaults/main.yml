@@ -3,7 +3,7 @@
 TTYUSER_users: []
 
 TTYUSER_sudoers: []
-
+TTYUSER_usesudopass: true
 TTYUSER_revoke_sudoers: []
 TTYUSER_sshkey_type: ecdsa
 TTYUSER_sshkey_size: 521

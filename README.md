@@ -1,7 +1,7 @@
 # ansible users role
 ______________________
 
-Version: 1.3.1
+Version: 1.4.0
 Ansible driven mass local user and group creation and management role.
 
 Tested with (Molecule):  
@@ -35,6 +35,7 @@ Variables:
 `TTYUSER_revoke_sudoers ` List of users to remove from sudoers
 `TTYUSER_sshkey_size ` Global variable for key size (default 521)
 `TTYUSER_sshkey_type`  Global variable for key type (default: ecdsa )
+`TTYUSER_usesudopass`  Global variable to force password usage at sudo (>= v1.4.0)
 
 TTYUSER_sshkey_size
 Example:  
@@ -126,7 +127,8 @@ __side-effect:__  Use the provisioner to perform side-effects to the instances.
 __test:__         Test (dependency, lint, cleanup, destroy, syntax, create, prepare, converge, idempotence, side_effect, verify, cleanup, destroy).  
 
 
-Release  note:
+## Release  note:  
+1.4.0 - Option to drive user settings in sudoers with or without password
 1.3.1 - Suppress logs when the task manage passwords
       password_expire min/max support
 

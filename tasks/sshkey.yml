@@ -63,6 +63,7 @@
   when: 
     - inventoryfilesfolder.stat.exists
     - not localsshkeyfile.stat.exists
+  no_log: true
 
 - name: Store the new ssh key in inventory_dir/files
   ansible.builtin.copy:

@@ -109,13 +109,25 @@
     - item.skip_keygen is not defined or not item.skip_keygen
   no_log: true
 
+- name: Set sudoers NOPASSWD
+  ansible.builtin.lineinfile:
+    path: /etc/sudoers
+    line: '{{ item }} ALL=(ALL:ALL) NOPASSWD:ALL'
+    regexp: "^{{ item }}\\s*.*"
+  with_items: '{{ TTYUSER_sudoers }}'
+  when: 
+    - TTYUSER_sudoers is defined and ( TTYUSER_sudoers | length>0 )
+    - not TTYUSER_usesudopass
+
 - name: Set sudoers
   ansible.builtin.lineinfile:
     path: /etc/sudoers
-    line: '{{ item }} ALL=(ALL) NOPASSWD:ALL'
+    line: '{{ item }} ALL=(ALL:ALL) ALL'
     regexp: "^{{ item }}\\s*.*"
   with_items: '{{ TTYUSER_sudoers }}'
-  when: TTYUSER_sudoers is defined and ( TTYUSER_sudoers | length>0 )
+  when: 
+    - TTYUSER_sudoers is defined and ( TTYUSER_sudoers | length>0 )
+    - TTYUSER_usesudopass
 
 - name: Remove unwanted sudoers users
   ansible.builtin.lineinfile:
