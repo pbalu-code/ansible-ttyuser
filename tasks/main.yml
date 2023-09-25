@@ -113,7 +113,7 @@
     label: "{{ item.name }}"
   when: 
     - item.pubkeys is defined and ( item.pubkeys | length > 10 )
-    - item.state != 'absent'"
+    - item.state != 'absent'
   no_log: true
 
 - name: Ensure .ssh directory is present
