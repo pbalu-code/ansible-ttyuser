@@ -1,7 +1,7 @@
 # ansible users role
 ______________________
 
-Version: 1.4.0
+Version: 1.4.1
 Ansible driven mass local user and group creation and management role.
 
 Tested with (Molecule):  
@@ -36,6 +36,7 @@ Variables:
 `TTYUSER_sshkey_size ` Global variable for key size (default 521)
 `TTYUSER_sshkey_type`  Global variable for key type (default: ecdsa )
 `TTYUSER_usesudopass`  Global variable to force password usage at sudo (>= v1.4.0)
+`TTYUSER_password_hash` sha512  # Global variable for password hashing algorithm - "md5", "blowfish", "sha256", "sha512" ← (default)
 
 TTYUSER_sshkey_size
 Example:  
@@ -45,7 +46,7 @@ TTYUSER_users:
   - name: captain
     state: present #optional
     shell: /bin/bash #optional 
-    password: "{{ 'password123' | password_hash('sha512') }}"  #optional
+    password: "{{ 'password123' }}"  #optional  >=1.4.1 No hashing needed. (Builtin)
     keypass: xcvbn123 # Password for the SSH key what is to be created
     group: skipper #optional*
     groups:   #optional with auto append
@@ -128,6 +129,9 @@ __test:__         Test (dependency, lint, cleanup, destroy, syntax, create, prep
 
 
 ## Release  note:  
+1.4.1 - Support vaulted password
+        Builtin password hashing
+
 1.4.0 - Option to drive user settings in sudoers with or without password
 1.3.1 - Suppress logs when the task manage passwords
       password_expire min/max support

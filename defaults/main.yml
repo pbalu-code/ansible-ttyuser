@@ -8,3 +8,5 @@ TTYUSER_revoke_sudoers: []
 TTYUSER_sshkey_type: ecdsa
 TTYUSER_sshkey_size: 521
 TTYUSER_update_access_conf: false
+# "md5", "blowfish", "sha256", "sha512" ← (default)
+TTYUSER_password_hash: sha512

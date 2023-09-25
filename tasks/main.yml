@@ -47,10 +47,10 @@
     label: "{{ item.name }}"
   when: TTYUSER_groups is defined
 
-- name: Manage users
+- name: "Manage users ( Without passwords )"
   ansible.builtin.user:
     name: '{{ item.name }}'
-    password: '{{ item.password | default(omit) }}'
+#    password: "{{ item.password | default(omit) }}"
     update_password: "{{ item.update_password | default('on_create') }}"
     password_lock: '{{ item.password_lock | default(omit) }}'
     shell: '{{ item.shell | default(omit) }}'
@@ -70,6 +70,38 @@
   loop_control:
     label: "{{ item.name }}"
   no_log: true
+  when:
+    - not ( item.password is defined )
+
+- name: "Manage users (With passwords)"
+  ansible.builtin.user:
+    name: '{{ item.name }}'
+    password: "{{ item.password | password_hash('sha512') }}"
+    update_password: "{{ item.update_password | default('on_create') }}"
+    password_lock: '{{ item.password_lock | default(omit) }}'
+    shell: '{{ item.shell | default(omit) }}'
+    state: '{{ item.state | default("present") }}'
+    append: "{{ item.groups is defined | ternary('yes', omit) }}"
+    group: '{{ item.group | default(item.name) }}'
+    groups: '{{ item.groups | default(omit) }}'
+    home: '{{ item.home | default(omit) }}'
+    uid: '{{ item.uid | default(omit) }}'
+    comment: '{{ item.comment | default(omit) }}'
+    remove: "{{ item.remove_homedir | default('no') }}"
+    password_expire_max: "{{ item.password_expire_max | default(omit) }}"
+    password_expire_min: "{{ item.password_expire_min | default(omit) }}"
+    force: yes
+    # local: yes
+  loop: '{{ TTYUSER_users }}'
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - item.password is defined and ( item.password | length > 2 )
+  no_log: true
+
+
+
+
 
 - name: Manage SSH authorized_keys
   ansible.posix.authorized_key:
